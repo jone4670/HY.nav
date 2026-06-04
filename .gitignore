@@ -7,3 +7,4 @@ __pycache__/
 *.so
 .vscode/
 .claude/
+rmuc_2025.pcd
