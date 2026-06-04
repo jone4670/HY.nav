@@ -1,0 +1,23 @@
+pkill -9 -f "pointlio|ros2|rviz|component|lifecycle|slam|livox|map_saver|joy|terrain|joint|robot_state|pointcloud|teleop|static" 2>/dev/null
+sleep 3
+rm -f /dev/shm/fastrtps_port* /dev/shm/*_fastrtps*
+
+
+source /opt/ros/humble/setup.bash
+source ~/ros_ws/install/setup.bash
+ros2 launch pb2025_nav_bringup rm_navigation_reality_launch.py \
+    world:=reserve \
+    slam:=True \
+    use_robot_state_pub:=True
+  
+ls -l /proc/$(ps aux | grep "chassis_bridge_node" | grep -v python | grep -v grep | awk '{print $2}')/fd/ 2>/dev/null | grep tty
+sudo chmod 666 /dev/ttyUSB0
+pkill -f "chassis_bridge" && sleep 1 && source /opt/ros/humble/setup.bash && source ~/ros_ws/install/setup.bash && ros2 run pb2025_chassis_bridge chassis_bridge_node --ros-args -p uart_device:="/dev/ttyUSB0"
+
+
+
+
+ros2 topic echo /cmd_vel
+ros2 topic echo /cmd_vel_nav2_result
+
+sudo strace -e write -p $(ps aux | grep "chassis_bridge_node" | grep -v python | grep -v grep | awk '{print $2}') 2>&1
